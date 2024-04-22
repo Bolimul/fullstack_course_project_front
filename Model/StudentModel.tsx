@@ -32,7 +32,7 @@ const getAllStudents = (): Student[] => {
 }
 
 const getStudent = (id: string): Student | undefined => {
-    return data.find((student) => student.id === id);
+    return data.find((student) => student.id == id);
 }
 
 const addStudent = (student: Student) => {
@@ -40,7 +40,7 @@ const addStudent = (student: Student) => {
 }
 
 const deleteStudent = (id: string) => {
-    const index = data.findIndex((student) => student.id === id);
+    const index = data.findIndex((student) => student.id == id);
     if(index != -1)
         data.splice(index, 1)
 }

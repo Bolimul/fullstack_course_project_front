@@ -1,17 +1,24 @@
 import { useState, FC } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, TextInput, StatusBar, Button} from 'react-native';
+import StudentModel, { Student } from '../Model/StudentModel';
 
-export default function StudentAddPage() {
+const StudentAddPage: FC<{navigation: any}> = ({navigation}) => {
 
     const [name, onChangeName] = useState('');
     const [id, onChangeID] = useState('');
     const [address, onChangeAddress] = useState('');
   
     const onCancel = () => {
-      Alert.alert("Cancel")
+      navigation.navigate("StudentListPage")
     }
     const onSave = () => {
-      Alert.alert("Save")
+      const student:Student = {
+        name: name,
+        id: id,
+        imgUrl: address
+      }
+      StudentModel.addStudent(student);
+      navigation.navigate("StudentListPage")
     }
     return(    <View style={styles.container}>
         <Image style={styles.image} source={require('../assets/avatar.png')}/>
@@ -79,3 +86,5 @@ const styles = StyleSheet.create({
       padding: 10
     }
 })
+
+export default StudentAddPage;

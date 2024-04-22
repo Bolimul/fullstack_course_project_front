@@ -1,17 +1,37 @@
 import {FC, useEffect, useState} from "react";
-import {FlatList, StatusBar, Text, View, StyleSheet} from "react-native"
+import {FlatList, StatusBar, Text, View, StyleSheet, Button} from "react-native"
 import StudentListRow from "./StudentListRow";
 import StudentModel, {Student} from "../Model/StudentModel";
 
 
-const StudentList: FC = () => {
+const StudentListPage: FC<{navigation: any}> = ({navigation}) => {
     const [data, setData] = useState<Student[]>([])
     const onItemSelected = (id: string) => {
         console.log('Item selected' + id)
+        navigation.navigate('StudentDetailsPage', {id: id});
     }
+
+    useEffect(()=>{
+        const unsubsribe = navigation.addListener('focus',()=>{
+        setData([...StudentModel.getAllStudents()])
+        console.log("screen in focus")
+        })
+        return unsubsribe
+        },[navigation])
 
 useEffect(() => {
     setData(StudentModel.getAllStudents())
+    navigation.setOptions(
+        {
+            headerTitle: "Students",
+            headerRight: () => (
+              <Button
+              onPress={() => navigation.navigate('StudentAddPage')}
+              title="Add"
+              />
+            )
+          }
+    )
 }, [])
 
     return(
@@ -33,4 +53,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default StudentList
+export default StudentListPage
