@@ -12,27 +12,52 @@ const StudentListPage: FC<{navigation: any}> = ({navigation}) => {
     }
 
     useEffect(()=>{
-        const unsubsribe = navigation.addListener('focus',()=>{
-        setData([...StudentModel.getAllStudents()])
+        const unsubsribe = navigation.addListener('focus',async()=>{
+        let students = Array<Student>()
+        try{
+            students = await StudentModel.getAllStudents()
+        }catch(err){
+            console.log(err)
+        }
+        setData(students)
+        console.log(students)
         console.log("screen in focus")
+        navigation.setOptions(
+            {
+                headerTitle: "Students",
+                headerRight: () => (
+                  <Button
+                  onPress={() => navigation.navigate('StudentAddPage')}
+                  title="Add"
+                  />
+                )
+              }
+        )
         })
         return unsubsribe
         },[navigation])
 
-useEffect(() => {
-    setData(StudentModel.getAllStudents())
-    navigation.setOptions(
-        {
-            headerTitle: "Students",
-            headerRight: () => (
-              <Button
-              onPress={() => navigation.navigate('StudentAddPage')}
-              title="Add"
-              />
-            )
-          }
-    )
-}, [])
+// useEffect(() => {
+//     let students = Array<Student>()
+//     try{
+//         const students = await StudentModel.getAllStudents()
+//         setData(students)
+//     }catch(err){
+//         console.log(err)
+//     }
+//     setData(StudentModel.getAllStudents())
+//     navigation.setOptions(
+//         {
+//             headerTitle: "Students",
+//             headerRight: () => (
+//               <Button
+//               onPress={() => navigation.navigate('StudentAddPage')}
+//               title="Add"
+//               />
+//             )
+//           }
+//     )
+// }, [])
 
     return(
         <FlatList 

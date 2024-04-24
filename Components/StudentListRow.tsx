@@ -15,7 +15,9 @@ const onPress = () => {
     <TouchableHighlight onPress={onPress}
     underlayColor={'grey'}>
         <View style={styles.listrow}>
-            <Image style={styles.avatar} source={require('../assets/avatar.png')}/>
+            {imgURL == "url" && <Image style={styles.avatar} source={require('../assets/avatar.png')}/>}
+            {imgURL != "url" && <Image style={styles.avatar} source={{uri: imgURL}}/>}
+            
             <View style={styles.info}>
             <Text style={styles.name}>{name}</Text>
             <Text style={styles.id}>{id}</Text>

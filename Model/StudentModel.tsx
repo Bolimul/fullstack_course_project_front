@@ -1,3 +1,6 @@
+import StudentApi from "../api/StudentApi"
+import FormData from 'form-data';
+
 export type Student = {
     name: string,
     id: string,
@@ -27,16 +30,51 @@ const data: Student[] = [
     }
 ]
 
-const getAllStudents = (): Student[] => {
+const getAllStudents = async () => {
+    console.log("getAllStudentss")
+    let data = Array<Student>()
+    try {
+        const students: any = await StudentApi.getAllStudents()
+        if(students.data){
+            for (let index = 0; index < students.data.length; index++) {
+                console.log("element: " + students.data[index]._id)
+                const st: Student = {
+                    name: students.data[index].name,
+                    id: students.data[index]._id,
+                    imgUrl: students.data[index].imgUrl
+                }
+                data.push(st)
+            }
+        }
+        console.log(data)
+        return data
+    } catch (error) {
+        console.log("Fail reading students from server: " + error)
+    }
     return data
+    
+    
 }
 
 const getStudent = (id: string): Student | undefined => {
     return data.find((student) => student.id == id);
 }
 
-const addStudent = (student: Student) => {
-    data.push(student)
+const addStudent = async (student: Student) => {
+    console.log("addStudent")
+    const data = {_id: student.id, name: student.name, imgUrl: student.imgUrl}
+    try {
+        const res = await StudentApi.addStudent(data) 
+        if(!res.ok){
+            console.log("adding student failed")
+        }
+        else{
+            console.log("adding student was successful")
+        }
+    } catch (error) {
+        console.log(error)
+    }
+    
 }
 
 const deleteStudent = (id: string) => {
@@ -45,4 +83,25 @@ const deleteStudent = (id: string) => {
         data.splice(index, 1)
 }
 
-export default {getAllStudents, getStudent, addStudent, deleteStudent}
+const uploadImage = async(imageURI: String) => {
+        var body = new FormData();
+        body.append('file', {name: "name",type: 'image/jpeg',"uri": imageURI});
+        try{
+            const res = await StudentApi.uploadImage(body)
+            if(!res.ok){
+                console.log("save failed " + res.problem)
+            }else{
+                if(res.data){
+                    const d:any = res.data
+                    return d.url
+                }
+            }
+        }catch(err){
+            console.log("save failed " + err)
+        }
+        return ""
+        
+        
+}
+
+export default {getAllStudents, getStudent, addStudent, deleteStudent, uploadImage}
