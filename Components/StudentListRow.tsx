@@ -2,11 +2,12 @@ import { useState, FC } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, TextInput, StatusBar, Button, TouchableHighlight} from 'react-native';
 
 const StudentListRow: FC<{
-    name: string, 
-    id:string, 
-    imgURL: string, 
+    post_title: string, 
+    post_text:string, 
+    imgURL: string,
+    id: string,
     onItemSelected: (id: string) => void
-}> = ({name, id, imgURL, onItemSelected}) => {
+}> = ({post_title, post_text, imgURL, id, onItemSelected}) => {
 
 const onPress = () => {
     onItemSelected(id)
@@ -15,13 +16,10 @@ const onPress = () => {
     <TouchableHighlight onPress={onPress}
     underlayColor={'grey'}>
         <View style={styles.listrow}>
-            {imgURL == "url" && <Image style={styles.avatar} source={require('../assets/avatar.png')}/>}
-            {imgURL != "url" && <Image style={styles.avatar} source={{uri: imgURL}}/>}
-            
-            <View style={styles.info}>
-            <Text style={styles.name}>{name}</Text>
-            <Text style={styles.id}>{id}</Text>
-            </View>
+            <Text style={styles.name}>{post_title}</Text>
+            {imgURL == "url" && <Image style={styles.post_image} source={require('../assets/dish example.jpg')}/>}
+            {imgURL != "url" && <Image style={styles.post_image} source={{uri: imgURL}}/>}
+            <Text numberOfLines={2} style={styles.id}>{post_text}</Text>  
         </View>
     </TouchableHighlight>
   )
@@ -31,20 +29,17 @@ const styles = StyleSheet.create({
 
   listrow: {
     marginHorizontal: 5,
-    flexDirection: 'row',
+    flexDirection: 'column',
     elevation: 1,
     borderRadius: 2,
     marginVertical: 1,
-    
+    alignItems: 'center',
+    backgroundColor: 'bisque'
   },
-  avatar: {
+  post_image: {
     margin: 10,
-    height: 100,
-    width: 100,
-  },
-  info: {
-    flexDirection: 'column',
-    justifyContent: 'center'
+    height: 200,
+    width: 200,
   },
   name: {
     marginBottom: 5,
@@ -53,7 +48,14 @@ const styles = StyleSheet.create({
   },
   id: {
     marginBottom: 5,
-    fontSize:20
+    fontSize:20,
+    borderColor: 'black',
+  },
+  cont: {
+    marginBottom: 5,
+    fontSize:20,
+    borderColor: 'black',
+    alignSelf: 'flex-start'
   }
 
 });

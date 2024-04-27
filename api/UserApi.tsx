@@ -4,6 +4,13 @@ const getAllStudents = async () => {
     return await apiClient.get('/student')
 }
 
+const getUser = async (id: string, refreshToken: string) => {
+    apiClient.setHeader('Authorization', 'Bearer ' + refreshToken)
+    const data: any = await apiClient.get('/auth/refresh')
+    apiClient.setHeader('Authorization', 'Bearer ' + data.data['accessToken'])
+    return await apiClient.get('/student/' + id)
+}
+
 const addStudent = async (student: any) => {
     return await apiClient.post('/student', student)
 }
@@ -15,5 +22,6 @@ const uploadImage = async(image: any) => {
 export default {
     getAllStudents,
     addStudent,
-    uploadImage
+    uploadImage,
+    getUser
 }

@@ -3,13 +3,13 @@ import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, TextInput, Stat
 import StudentModel, { User } from '../Model/UserModel';
 import * as ImagePicker from 'expo-image-picker';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import PostModel, { Post } from '../Model/PostModel';
 
 
-const StudentAddPage: FC<{navigation: any}> = ({navigation}) => {
+const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => {
 
-    const [name, onChangeName] = useState('');
-    const [id, onChangeID] = useState('');
-    const [address, onChangeAddress] = useState('');
+    const [title, onChangeTitle] = useState('');
+    const [txt, onChangeTxt] = useState('');
     const [avatarUri, setAvatarUri] = useState('');
 
     const askPermission = async () => {
@@ -56,28 +56,40 @@ const StudentAddPage: FC<{navigation: any}> = ({navigation}) => {
     const onCancel = () => {
       navigation.navigate("StudentListPage")
     }
-    // const onSave = async() => {
-    //   console.log(avatarUri)
-    //   let student:Student = {
-    //     name: name,
-    //     id: id,
-    //     imgUrl: "url"
-    //   }
-    //   try {
-    //     if(avatarUri != ""){
-    //       console.log("uploading image")
-    //       const url = await StudentModel.uploadImage(avatarUri)
-    //       student.imgUrl = url
-    //     }
-    //   }catch(err){
-    //     console.log(err)
-    //   }
-    //   StudentModel.addStudent(student);
-    //   navigation.navigate("StudentListPage")
-    // }
+    const onSave = async() => {
+      console.log(avatarUri)
+      let post:Post = {
+        creator_id: route.params.userID,
+        post_title: title,
+        post_text: txt,
+        imgUrl: avatarUri,
+        id: ''
+      }
+      try {
+        if(avatarUri != ""){
+          console.log("uploading image")
+          const url = await PostModel.uploadImage(avatarUri)
+          post.imgUrl = url
+        }
+      }catch(err){
+        console.log(err)
+      }
+      const result = await PostModel.addPost(post, route.params.refreshToken);
+      console.log(result)
+      if(result)
+        navigation.navigate("PostListPage", {refreshToken: result.refreshToken, userID: route.params.userID})
+      else
+        Alert.alert("Something gone wrong while creating this post. Please try again")
+    }
     return(    
     <View style={styles.container}>
-      <View>
+
+        <TextInput
+          style={styles.input}
+          onChangeText={onChangeTitle}
+          placeholder='Enter your Title'
+        />
+        <View>
         {avatarUri == "" && <Image style={styles.avatar} source={require('../assets/avatar.png')}/>}
         {avatarUri != "" && <Image style={styles.avatar} source={{uri: avatarUri}}/>}
         <TouchableOpacity onPress={openGallery}>
@@ -86,34 +98,21 @@ const StudentAddPage: FC<{navigation: any}> = ({navigation}) => {
         <TouchableOpacity onPress={openCamera}>
           <Ionicons name={"camera"} style={styles.cameraButton} size={50}/>
         </TouchableOpacity>
+        </View>
         
-      </View>
         
         <TextInput
           style={styles.input}
-          onChangeText={onChangeName}
-          value={name}
-          placeholder='Enter your name'
-        />
-        <TextInput
-          style={styles.input}
-          onChangeText={onChangeID}
-          value={id}
-          placeholder='Enter your ID'
-        />
-        <TextInput
-          style={styles.input}
-          onChangeText={onChangeAddress}
-          value={address}
-          placeholder='Enter your address'
+          onChangeText={onChangeTxt}
+          placeholder='Enter your Text'
         />
         <View style={styles.buttons}>
           <TouchableOpacity style={styles.button} onPress={onCancel}>
             <Text style={styles.button}>CANCEL</Text>
           </TouchableOpacity>
-          {/* <TouchableOpacity style={styles.button} onPress={onSave}>
+          <TouchableOpacity style={styles.button} onPress={onSave}>
             <Text style={styles.button}>SAVE</Text>
-          </TouchableOpacity> */}
+          </TouchableOpacity>
         </View>
   
       </View>
@@ -147,7 +146,7 @@ const styles = StyleSheet.create({
     cameraButton: {
       position: 'absolute',
       bottom: -10,
-      left: 10,
+      left: 100,
       width: 50,
       height: 50,
     },
@@ -174,4 +173,4 @@ const styles = StyleSheet.create({
     }
 })
 
-export default StudentAddPage;
+export default PostAddPage;

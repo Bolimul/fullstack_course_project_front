@@ -3,14 +3,15 @@ import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, TextInput, Stat
 import StudentModel, { User } from '../Model/UserModel';
 import * as ImagePicker from 'expo-image-picker';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import PostModel, { Post } from '../Model/PostModel';
 
 
-const StudentAddPage: FC<{navigation: any}> = ({navigation}) => {
+const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => {
 
-    const [name, onChangeName] = useState('');
-    const [id, onChangeID] = useState('');
-    const [address, onChangeAddress] = useState('');
-    const [avatarUri, setAvatarUri] = useState('');
+    const [title, onChangeTitle] = useState('');
+    const [txt, onChangeTxt] = useState('');
+    const [avatarUri, setAvatarUri] = useState('url');
+    const [id, setPostId] = useState('')
 
     const askPermission = async () => {
       try {
@@ -48,72 +49,91 @@ const StudentAddPage: FC<{navigation: any}> = ({navigation}) => {
         console.log("open camera error: " + err)
       }
     }
-
+    const getPost = async() => {
+      try{
+        const post: any = await PostModel.getPost(route.params.id, route.params.refreshToken)
+        navigation.setParams({refreshToken: post.refreshToken})
+        const solidPost: Post = post.dispPost
+        console.log(solidPost)
+        console.log(route.params.userID)
+        setAvatarUri(solidPost.imgUrl)
+        onChangeTitle(solidPost.post_title)
+        onChangeTxt(solidPost.post_text)
+        setPostId(solidPost.id)
+      }catch(err){
+        console.log(err)
+      }
+    }
     useEffect(() => {
       askPermission()
+      getPost()
     }, [])
   
     const onCancel = () => {
       navigation.navigate("StudentListPage")
     }
-    // const onSave = async() => {
-    //   console.log(avatarUri)
-    //   let student:Student = {
-    //     name: name,
-    //     id: id,
-    //     imgUrl: "url"
-    //   }
-    //   try {
-    //     if(avatarUri != ""){
-    //       console.log("uploading image")
-    //       const url = await StudentModel.uploadImage(avatarUri)
-    //       student.imgUrl = url
-    //     }
-    //   }catch(err){
-    //     console.log(err)
-    //   }
-    //   StudentModel.addStudent(student);
-    //   navigation.navigate("StudentListPage")
-    // }
+    const onSave = async() => {
+      let post:Post = {
+        creator_id: route.params.userID,
+        post_title: title,
+        post_text: txt,
+        imgUrl: "url",
+        id: id
+      }
+      try {
+        if(avatarUri != ""){
+          console.log("uploading image")
+          const url = await PostModel.uploadImage(avatarUri)
+          post.imgUrl = url
+        }
+      }catch(err){
+        console.log(err)
+      }
+      const result = await PostModel.updatePost(post, route.params.refreshToken, post.id);
+      console.log(result)
+      if(result){
+        navigation.setParams({refreshToken: result.refreshToken})
+        navigation.setParams({userID: route.params.userID})
+        navigation.navigate("StudentDetailsPage", {refreshToken: result.refreshToken, userID: route.params.userID, id: post.id})
+      }
+        
+      else
+        Alert.alert("Something gone wrong while updating this post. Please try again")
+    }
     return(    
     <View style={styles.container}>
-      <View>
-        {avatarUri == "" && <Image style={styles.avatar} source={require('../assets/avatar.png')}/>}
-        {avatarUri != "" && <Image style={styles.avatar} source={{uri: avatarUri}}/>}
+
+        <TextInput
+          style={styles.input}
+          onChangeText={onChangeTitle}
+          value={title}
+          placeholder='Enter your Title'
+        />
+        <View>
+        {avatarUri == "url" && <Image style={styles.avatar} source={require('../assets/avatar.png')}/>}
+        {avatarUri != "url" && <Image style={styles.avatar} source={{uri: avatarUri}}/>}
         <TouchableOpacity onPress={openGallery}>
-          <Ionicons name={"image"} style={styles.cameraButton} size={50}/>
+          <Ionicons name={"image"} style={styles.galleryButton} size={50}/>
         </TouchableOpacity>
         <TouchableOpacity onPress={openCamera}>
           <Ionicons name={"camera"} style={styles.cameraButton} size={50}/>
         </TouchableOpacity>
+        </View>
         
-      </View>
         
         <TextInput
           style={styles.input}
-          onChangeText={onChangeName}
-          value={name}
-          placeholder='Enter your name'
-        />
-        <TextInput
-          style={styles.input}
-          onChangeText={onChangeID}
-          value={id}
-          placeholder='Enter your ID'
-        />
-        <TextInput
-          style={styles.input}
-          onChangeText={onChangeAddress}
-          value={address}
-          placeholder='Enter your address'
+          onChangeText={onChangeTxt}
+          value={txt}
+          placeholder='Enter your Text'
         />
         <View style={styles.buttons}>
           <TouchableOpacity style={styles.button} onPress={onCancel}>
             <Text style={styles.button}>CANCEL</Text>
           </TouchableOpacity>
-          {/* <TouchableOpacity style={styles.button} onPress={onSave}>
+          <TouchableOpacity style={styles.button} onPress={onSave}>
             <Text style={styles.button}>SAVE</Text>
-          </TouchableOpacity> */}
+          </TouchableOpacity>
         </View>
   
       </View>
@@ -147,7 +167,7 @@ const styles = StyleSheet.create({
     cameraButton: {
       position: 'absolute',
       bottom: -10,
-      left: 10,
+      left: 100,
       width: 50,
       height: 50,
     },
@@ -174,4 +194,4 @@ const styles = StyleSheet.create({
     }
 })
 
-export default StudentAddPage;
+export default PostAddPage;

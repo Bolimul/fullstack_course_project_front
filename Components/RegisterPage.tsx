@@ -3,13 +3,15 @@ import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, TextInput, Stat
 import StudentModel, { User } from '../Model/UserModel';
 import * as ImagePicker from 'expo-image-picker';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import LoginRegistrationModel from '../Model/LoginRegistrationModel';
 
 
 const StudentAddPage: FC<{navigation: any}> = ({navigation}) => {
 
     const [name, onChangeName] = useState('');
-    const [id, onChangeID] = useState('');
-    const [address, onChangeAddress] = useState('');
+    const [age, onChangeAge] = useState('');
+    const [password, onChangePassword] = useState('');
+    const [email, onChangeEmail] = useState('');
     const [avatarUri, setAvatarUri] = useState('');
 
     const askPermission = async () => {
@@ -53,30 +55,34 @@ const StudentAddPage: FC<{navigation: any}> = ({navigation}) => {
       askPermission()
     }, [])
   
-    const onCancel = () => {
-      navigation.navigate("StudentListPage")
+    const onSave = async() => {
+      console.log(avatarUri)
+      let user = {
+        name: name,
+        age: age,
+        email: email,
+        password: password,
+        imgUrl: "url"
+      }
+      try {
+        if(avatarUri != ""){
+          console.log("uploading image")
+          const url = await StudentModel.uploadImage(avatarUri)
+          user.imgUrl = url
+        }
+      }catch(err){
+        console.log(err)
+      }
+      const result: string = await LoginRegistrationModel.registration(user);
+      if(result != null){
+        navigation.navigate("StudentListPage", result)
+      }else{
+        Alert.alert("Login Error:", "Your email or password are incorrect")
+      }
     }
-    // const onSave = async() => {
-    //   console.log(avatarUri)
-    //   let student:Student = {
-    //     name: name,
-    //     id: id,
-    //     imgUrl: "url"
-    //   }
-    //   try {
-    //     if(avatarUri != ""){
-    //       console.log("uploading image")
-    //       const url = await StudentModel.uploadImage(avatarUri)
-    //       student.imgUrl = url
-    //     }
-    //   }catch(err){
-    //     console.log(err)
-    //   }
-    //   StudentModel.addStudent(student);
-    //   navigation.navigate("StudentListPage")
-    // }
     return(    
     <View style={styles.container}>
+
       <View>
         {avatarUri == "" && <Image style={styles.avatar} source={require('../assets/avatar.png')}/>}
         {avatarUri != "" && <Image style={styles.avatar} source={{uri: avatarUri}}/>}
@@ -97,23 +103,23 @@ const StudentAddPage: FC<{navigation: any}> = ({navigation}) => {
         />
         <TextInput
           style={styles.input}
-          onChangeText={onChangeID}
-          value={id}
-          placeholder='Enter your ID'
+          onChangeText={onChangeAge}
+          placeholder='Enter your age'
         />
         <TextInput
           style={styles.input}
-          onChangeText={onChangeAddress}
-          value={address}
-          placeholder='Enter your address'
+          onChangeText={onChangeEmail}
+          placeholder='Enter your email'
+        />
+        <TextInput
+          style={styles.input}
+          onChangeText={onChangePassword}
+          placeholder='Enter your password'
         />
         <View style={styles.buttons}>
-          <TouchableOpacity style={styles.button} onPress={onCancel}>
-            <Text style={styles.button}>CANCEL</Text>
+          <TouchableOpacity style={styles.button} onPress={onSave}>
+            <Text style={styles.button}>REGISTER</Text>
           </TouchableOpacity>
-          {/* <TouchableOpacity style={styles.button} onPress={onSave}>
-            <Text style={styles.button}>SAVE</Text>
-          </TouchableOpacity> */}
         </View>
   
       </View>
