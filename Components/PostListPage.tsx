@@ -8,7 +8,7 @@ const PostListPage: FC<{route:any, navigation: any, }> = ({navigation, route}) =
     const [data, setData] = useState<Post[]>([])
     const onItemSelected = (id: string) => {
         console.log('Item selected' + id)
-        navigation.navigate('StudentDetailsPage', {id: id, refreshToken: route.params.refreshToken, userID: route.params.userID});
+        navigation.navigate('PostDetailsPage', {id: id, refreshToken: route.params.refreshToken, userID: route.params.userID});
     }
     let refToken = ''
     useEffect(()=>{
@@ -16,14 +16,14 @@ const PostListPage: FC<{route:any, navigation: any, }> = ({navigation, route}) =
         try{
             const posts: any = await PostModel.getAllPosts(route.params.refreshToken)
             setData(posts.Posts)
-            route.params.refreshToken = posts.refreshToken
+            navigation.setParams({refreshToken: posts.refreshToken})
         }catch(err){
             console.log(err)
         }
         console.log("screen in focus")
         navigation.setOptions(
             {
-                headerTitle: "Students",
+                headerTitle: "Posts",
                 headerRight: () => (
                   <Button
                   onPress={() => navigation.navigate('PostAddPage', {refreshToken: route.params.refreshToken, userID: route.params.userID})}

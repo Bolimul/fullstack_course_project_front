@@ -1,11 +1,13 @@
 import { useState, FC, useEffect } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, TextInput, StatusBar, Button} from 'react-native';
 import PostModel, {Post} from '../Model/PostModel';
+import {HeaderBackButton} from '@react-navigation/elements'
 
-const StudentDetailsPage: FC<{route: any, navigation: any}> = ({route, navigation}) => {
+const PostDetailsPage: FC<{route: any, navigation: any}> = ({route, navigation}) => {
   const [post, setPost] = useState<Post>({creator_id: '0', post_title: '0', post_text: '0', imgUrl: '0', id: '0'})
   const [isOwner, setOwner] = useState(false)
   useEffect(() => {
+    
     const unsubscribe = navigation.addListener('focus',async()=>{
       try{
         const post: any = await PostModel.getPost(route.params.id, route.params.refreshToken)
@@ -14,10 +16,14 @@ const StudentDetailsPage: FC<{route: any, navigation: any}> = ({route, navigatio
         console.log(post)
         if(post.dispPost.creator_id == route.params.userID)
           setOwner(true)
+        navigation.setOptions({
+          headerLeft: (props: any) => (
+            <HeaderBackButton {...props} onPress={() => {navigation.navigate("PostListPage", {refreshToken: post.refreshToken, userID: route.params.userID})}}/>
+          )
+        })
       }catch(err){
         console.log(err)
       }
-      
     })
     return unsubscribe
 }, [navigation, route.params])
@@ -85,4 +91,4 @@ const styles = StyleSheet.create({
     }
 })
 
-export default StudentDetailsPage;
+export default PostDetailsPage;

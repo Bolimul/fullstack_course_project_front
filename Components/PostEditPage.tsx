@@ -1,6 +1,6 @@
 import { useState, FC, useEffect } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, TextInput, StatusBar, Button} from 'react-native';
-import StudentModel, { User } from '../Model/UserModel';
+import {HeaderBackButton} from '@react-navigation/elements'
 import * as ImagePicker from 'expo-image-picker';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import PostModel, { Post } from '../Model/PostModel';
@@ -60,6 +60,11 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
         onChangeTitle(solidPost.post_title)
         onChangeTxt(solidPost.post_text)
         setPostId(solidPost.id)
+        navigation.setOptions({
+          headerLeft:(props:any) => (
+            <HeaderBackButton {...props} onPress={() => navigation.navigate("PostDetailsPage", {refreshToken: post.refreshToken, userID: route.params.userID, id: route.params.id})}/>
+          )
+        })
       }catch(err){
         console.log(err)
       }
@@ -70,7 +75,7 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
     }, [])
   
     const onCancel = () => {
-      navigation.navigate("StudentListPage")
+      navigation.navigate("PostDetailsPage", {refreshToken: route.params.refreshToken, userID: route.params.userID, id: route.params.id})
     }
     const onSave = async() => {
       let post:Post = {

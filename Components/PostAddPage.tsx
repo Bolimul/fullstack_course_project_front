@@ -1,6 +1,6 @@
 import { useState, FC, useEffect } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, TextInput, StatusBar, Button} from 'react-native';
-import StudentModel, { User } from '../Model/UserModel';
+import {HeaderBackButton} from '@react-navigation/elements'
 import * as ImagePicker from 'expo-image-picker';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import PostModel, { Post } from '../Model/PostModel';
@@ -51,10 +51,15 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
 
     useEffect(() => {
       askPermission()
+      navigation.setOptions({
+        headerLeft:(props: any) => (
+          <HeaderBackButton {...props} onPress={() => navigation.navigate("PostListPage", {refreshToken: route.params.refreshToken, userID: route.params.userID})}/>
+        )
+      })
     }, [])
   
     const onCancel = () => {
-      navigation.navigate("StudentListPage")
+      navigation.navigate("PostListPage", {refreshToken: route.params.refreshToken, userID: route.params.userID})
     }
     const onSave = async() => {
       console.log(avatarUri)
