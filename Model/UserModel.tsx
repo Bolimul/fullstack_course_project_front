@@ -38,6 +38,7 @@ const getAllStudents = async () => {
 
 const getUserById = async(id: string, refreshToken: string) => {
     try{
+        console.log('User id: ' + id)
         const user: any = await UserApi.getUser(id, refreshToken)
     if(user)
         {
@@ -49,22 +50,23 @@ const getUserById = async(id: string, refreshToken: string) => {
     
 }
 
-// const addStudent = async (student: User) => {
-//     console.log("addStudent")
-//     const data = {_id: student.id, name: student.name, imgUrl: student.imgUrl}
-//     try {
-//         const res = await StudentApi.addStudent(data) 
-//         if(!res.ok){
-//             console.log("adding student failed")
-//         }
-//         else{
-//             console.log("adding student was successful")
-//         }
-//     } catch (error) {
-//         console.log(error)
-//     }
+const updateUser = async (user: User, refreshToken: string, userID: string) => {
+    console.log("addStudent")
+    const data = {id: userID.toString(), name: user.name, age: user.age, email: user.email, imgUrl: user.imgUrl}
+    try {
+        const res = await UserApi.updateUser(data, refreshToken) 
+        if(!res){
+            console.log("adding student failed")
+        }
+        else{
+            console.log("adding student was successful")
+            return res.refreshToken
+        }
+    } catch (error) {
+        console.log(error)
+    }
     
-// }
+}
 
 // const deleteStudent = (id: string) => {
 //     const index = data.findIndex((student) => student.id == id);
@@ -93,4 +95,4 @@ const uploadImage = async(imageURI: String) => {
         
 }
 
-export default {getUserById, uploadImage}
+export default {getUserById, uploadImage, updateUser}

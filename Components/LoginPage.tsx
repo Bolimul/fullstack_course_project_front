@@ -1,7 +1,7 @@
 import { useState, FC, useEffect } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, TextInput, StatusBar, Button} from 'react-native';
 import LoginRegistrationModel from '../Model/LoginRegistrationModel';
-import UserModel from '../Model/UserModel';
+import LoginRegisterDropdownMenu from '../Components/LoginRegisterDropdownMenu'
 
 
 const LoginPage: FC<{navigation: any}> = ({navigation}) => {
@@ -16,7 +16,7 @@ const LoginPage: FC<{navigation: any}> = ({navigation}) => {
       }
       const result: any = await LoginRegistrationModel.login(user.email, user.password)
       if(result != null){
-        navigation.navigate("PostListPage", result)
+        navigation.navigate('PostListPage',{accessToken: result.accessToken, refreshToken: result.refreshToken, userID: result.userID})
       }else{
         Alert.alert("Login Error:", "Your email or password are incorrect")
       }
@@ -37,6 +37,9 @@ const LoginPage: FC<{navigation: any}> = ({navigation}) => {
         <View style={styles.buttons}>
           <TouchableOpacity style={styles.button} onPress={onSave}>
             <Text style={styles.button}>LOGIN</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => {navigation.navigate("RegisterPage")}}>
+            <Text style={styles.button}>Register</Text>
           </TouchableOpacity>
         </View>
   

@@ -29,7 +29,20 @@ const registration = async(user: any) => {
     }
 }
 
+const logout = async(refreshToken: string) => {
+    try{
+        const res = await LoginRegistrationApi.logout(refreshToken)
+        if(res.status == 200)
+            return true
+        else
+            return false
+    }catch(err){
+        console.log(err)
+    }
+}
+
 export default {
     login,
-    registration
+    registration,
+    logout
 }

@@ -2,10 +2,35 @@ import { useState, FC, useEffect } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, TextInput, StatusBar, Button} from 'react-native';
 import PostModel, {Post} from '../Model/PostModel';
 import {HeaderBackButton} from '@react-navigation/elements'
+import LoginRegistrationModel from '../Model/LoginRegistrationModel';
+import LoginRegisterDropdownMenu from './LoginRegisterDropdownMenu';
 
 const PostDetailsPage: FC<{route: any, navigation: any}> = ({route, navigation}) => {
   const [post, setPost] = useState<Post>({creator_id: '0', post_title: '0', post_text: '0', imgUrl: '0', id: '0'})
   const [isOwner, setOwner] = useState(false)
+
+  const onOptionSelected = async(option: string) => {
+    if (option == '2') {
+        navigation.navigate('PostAddPage', {refreshToken: route.params.refreshToken, userID: route.params.userID})
+    }
+    else if(option == '1') {
+        navigation.navigate('PostListPage', {refreshToken: route.params.refreshToken, userID: route.params.userID})
+    }
+    else if(option == '3') {
+        navigation.navigate('UserEditPage', {refreshToken: route.params.refreshToken, userID: route.params.userID})
+    }
+    else if(option == '4') {
+        navigation.navigate('UserPostsListPage', {refreshToken: route.params.refreshToken, userID: route.params.userID})
+    }
+    else if(option == '5') {
+        const res = await LoginRegistrationModel.logout(route.params.refreshToken)
+        if(res == true)
+            navigation.navigate('LoginPage')
+        else
+            Alert.alert("Logout was not successful")
+    }
+}
+
   useEffect(() => {
     
     const unsubscribe = navigation.addListener('focus',async()=>{
@@ -19,7 +44,8 @@ const PostDetailsPage: FC<{route: any, navigation: any}> = ({route, navigation})
         navigation.setOptions({
           headerLeft: (props: any) => (
             <HeaderBackButton {...props} onPress={() => {navigation.navigate("PostListPage", {refreshToken: post.refreshToken, userID: route.params.userID})}}/>
-          )
+          ),
+          headerRight:() => <LoginRegisterDropdownMenu onOptionSelected={onOptionSelected} refreshToken={post.refreshToken}/>
         })
       }catch(err){
         console.log(err)

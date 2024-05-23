@@ -4,6 +4,8 @@ import {HeaderBackButton} from '@react-navigation/elements'
 import * as ImagePicker from 'expo-image-picker';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import PostModel, { Post } from '../Model/PostModel';
+import LoginRegisterDropdownMenu from './LoginRegisterDropdownMenu';
+import LoginRegistrationModel from '../Model/LoginRegistrationModel';
 
 
 const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => {
@@ -49,12 +51,36 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
       }
     }
 
+    const onOptionSelected = async(option: string, refreshToken: string) => {
+      if (option == '2') {
+          navigation.navigate('PostAddPage', {refreshToken: refreshToken, userID: route.params.userID})
+      }
+      else if(option == '1') {
+          navigation.navigate('PostListPage', {refreshToken: refreshToken, userID: route.params.userID})
+      }
+      else if(option == '3') {
+          navigation.navigate('UserEditPage', {refreshToken: refreshToken, userID: route.params.userID})
+      }
+      else if(option == '4') {
+          navigation.navigate('UserPostsListPage', {refreshToken: refreshToken, userID: route.params.userID})
+      }
+      else if(option == '5') {
+          const res = await LoginRegistrationModel.logout(refreshToken)
+          if(res == true)
+              navigation.navigate('LoginPage')
+          else
+              Alert.alert("Logout was not successful")
+      }
+    }
+
     useEffect(() => {
       askPermission()
       navigation.setOptions({
         headerLeft:(props: any) => (
           <HeaderBackButton {...props} onPress={() => navigation.navigate("PostListPage", {refreshToken: route.params.refreshToken, userID: route.params.userID})}/>
-        )
+
+        ),
+        headerRight:() => <LoginRegisterDropdownMenu onOptionSelected={onOptionSelected} refreshToken={route.params.refreshToken}/>
       })
     }, [])
   
@@ -63,6 +89,7 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
     }
     const onSave = async() => {
       console.log(avatarUri)
+      console.log(JSON.stringify(route.params))
       let post:Post = {
         creator_id: route.params.userID,
         post_title: title,
@@ -98,7 +125,7 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
         {avatarUri == "" && <Image style={styles.avatar} source={require('../assets/avatar.png')}/>}
         {avatarUri != "" && <Image style={styles.avatar} source={{uri: avatarUri}}/>}
         <TouchableOpacity onPress={openGallery}>
-          <Ionicons name={"image"} style={styles.cameraButton} size={50}/>
+          <Ionicons name={"image"} style={styles.galleryButton} size={50}/>
         </TouchableOpacity>
         <TouchableOpacity onPress={openCamera}>
           <Ionicons name={"camera"} style={styles.cameraButton} size={50}/>

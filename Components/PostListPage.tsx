@@ -1,7 +1,11 @@
 import {FC, useEffect, useState} from "react";
-import {FlatList, StatusBar, Text, View, StyleSheet, Button} from "react-native"
+import {FlatList, StatusBar, Text, View, StyleSheet, Button, Alert} from "react-native"
+import {CommonActions, useIsFocused, useNavigation} from '@react-navigation/native'
+import {HeaderBackButton} from '@react-navigation/elements'
 import StudentListRow from "./StudentListRow";
 import PostModel, { Post } from "../Model/PostModel";
+import LoginRegisterDropdownMenu from "./LoginRegisterDropdownMenu";
+import LoginRegistrationModel from "../Model/LoginRegistrationModel";
 
 
 const PostListPage: FC<{route:any, navigation: any, }> = ({navigation, route}) => {
@@ -10,53 +14,62 @@ const PostListPage: FC<{route:any, navigation: any, }> = ({navigation, route}) =
         console.log('Item selected' + id)
         navigation.navigate('PostDetailsPage', {id: id, refreshToken: route.params.refreshToken, userID: route.params.userID});
     }
-    let refToken = ''
+
+    const logout = async(refreshToken: string) => {
+        const res = await LoginRegistrationModel.logout(refreshToken)
+        if(res == true)
+            navigation.navigate('LoginPage')
+        else
+            Alert.alert("Logout was not successful")}
+
+    
     useEffect(()=>{
-        const unsubsribe = navigation.addListener('focus',async()=>{
+        console.log("Navigation route params: " + route.params.refreshToken)
+        let posts: any
+        const unsubscribeFocus = navigation.addListener('focus',async()=>{
         try{
-            const posts: any = await PostModel.getAllPosts(route.params.refreshToken)
+            posts = await PostModel.getAllPosts(route.params.refreshToken)
             setData(posts.Posts)
-            navigation.setParams({refreshToken: posts.refreshToken})
+            console.log("Navigation route params: " + route.params.data.refreshToken)
         }catch(err){
             console.log(err)
         }
+        await navigation.setParams({refreshToken: posts.refreshToken})
         console.log("screen in focus")
-        navigation.setOptions(
-            {
-                headerTitle: "Posts",
-                headerRight: () => (
-                  <Button
-                  onPress={() => navigation.navigate('PostAddPage', {refreshToken: route.params.refreshToken, userID: route.params.userID})}
-                  title="Add"
-                  />
-                )
-              }
+        navigation.setOptions({
+            headerRight:() => <LoginRegisterDropdownMenu onOptionSelected={onOptionSelected} refreshToken={posts.refreshToken}/>,
+            headerLeft:(props:any) => (<HeaderBackButton {...props} onPress={() => logout(posts.refreshToken)}/>)
+            }
         )
-        })
-        return unsubsribe
-        },[navigation, route.params])
+    })
+        
+        return () => {
+            unsubscribeFocus()
+        }
+        },[navigation, route.params?.refreshToken])
 
-// useEffect(() => {
-//     let students = Array<Student>()
-//     try{
-//         const students = await StudentModel.getAllStudents()
-//         setData(students)
-//     }catch(err){
-//         console.log(err)
-//     }
-//     setData(StudentModel.getAllStudents())
-//     navigation.setOptions(
-//         {
-//             headerTitle: "Students",
-//             headerRight: () => (
-//               <Button
-//               onPress={() => navigation.navigate('StudentAddPage')}
-//               title="Add"
-//               />
-//             )
-//           }
-//     )
-// }, [])
+        const onOptionSelected = async(option: string, refreshToken: string) => {
+            console.log("From PostListPage: " + route.params.refreshToken)
+            if (option == '2') {
+                navigation.dispatch(CommonActions.navigate('PostAddPage', {refreshToken: refreshToken, userID: route.params.userID}))
+            }
+            else if(option == '1') {
+                navigation.navigate('PostListPage', {refreshToken: refreshToken, userID: route.params.userID})
+            }
+            else if(option == '3') {
+                navigation.navigate('UserEditPage', {refreshToken: refreshToken, userID: route.params.userID})
+            }
+            else if(option == '4') {
+                navigation.navigate('UserPostsListPage', {refreshToken: refreshToken, userID: route.params.userID})
+            }
+            else if(option == '5') {
+                const res = await LoginRegistrationModel.logout(refreshToken)
+                if(res == true)
+                    navigation.navigate('LoginPage')
+                else
+                    Alert.alert("Logout was not successful")
+            }
+        }
 
     return(
         <FlatList 

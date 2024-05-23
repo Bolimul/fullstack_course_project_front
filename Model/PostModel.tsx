@@ -28,13 +28,38 @@ const getAllPosts = async (refreshToken: string) => {
                 data.push(pst)
             }
         }
+        console.log(data)
         return {Posts: data, refreshToken: posts.refreshToken}
     } catch (error) {
         console.log("Fail reading posts from server: " + error)
     }
     return data
-    
-    
+}
+
+const getAllPostsOfSpecificUser = async(refreshToken: string, userID: string) => {
+    console.log("getAllPosts")
+    let data = Array<Post>()
+    try {
+        const posts: any = await PostApi.getAllPosts(refreshToken)
+        if(posts.Posts){
+            for (let index = 0; index < posts.Posts.length; index++) {
+                const pst: Post = {
+                    creator_id: posts.Posts[index].creator_id,
+                    post_title: posts.Posts[index].post_title,
+                    post_text: posts.Posts[index].post_text,
+                    imgUrl: posts.Posts[index].imgUrl,
+                    id: posts.Posts[index]._id
+                }
+                if(pst.creator_id == userID)
+                    data.push(pst)
+            }
+        }
+        console.log(data)
+        return {Posts: data, refreshToken: posts.refreshToken}
+    } catch (error) {
+        console.log("Fail reading posts from server: " + error)
+    }
+    return data
 }
 
 const getPost = async(id: string, refreshToken: string) => {
@@ -70,6 +95,7 @@ const addPost = async (post: Post, refreshToken: string) => {
     const data = {creator_id: post.creator_id, post_title: post.post_title, imgUrl: post.imgUrl, post_text: post.post_text}
     try {
         const res = await PostApi.addPost(data, refreshToken) 
+        console.log("The res is " + res)
         if(res == false){
             return false
         }
@@ -135,4 +161,4 @@ const uploadImage = async(imageURI: String) => {
         
 }
 
-export default {getAllPosts, uploadImage, getPost, addPost, deletePost, updatePost}
+export default {getAllPosts, uploadImage, getPost, addPost, deletePost, updatePost, getAllPostsOfSpecificUser}

@@ -4,16 +4,18 @@ import {HeaderBackButton} from '@react-navigation/elements'
 import * as ImagePicker from 'expo-image-picker';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import PostModel, { Post } from '../Model/PostModel';
+import UserModel, { User } from '../Model/UserModel';
 import LoginRegistrationModel from '../Model/LoginRegistrationModel';
 import LoginRegisterDropdownMenu from './LoginRegisterDropdownMenu';
 
 
 const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => {
 
-    const [title, onChangeTitle] = useState('');
-    const [txt, onChangeTxt] = useState('');
+    const [name, onChangeName] = useState('');
+    const [age, onChangeAge] = useState('');
     const [avatarUri, setAvatarUri] = useState('url');
-    const [id, setPostId] = useState('')
+    const [email, onChangeEmail] = useState('');
+    const [refreshToken, setRefreshToken] = useState('')
 
     const askPermission = async () => {
       try {
@@ -52,21 +54,21 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
       }
     }
 
-    const onOptionSelected = async(option: string) => {
+    const onOptionSelected = async(option: string, refreshToken: string) => {
       if (option == '2') {
-          navigation.navigate('PostAddPage', {refreshToken: route.params.refreshToken, userID: route.params.userID})
+          navigation.navigate('PostAddPage', {refreshToken: refreshToken, userID: route.params.userID})
       }
       else if(option == '1') {
-          navigation.navigate('PostListPage', {refreshToken: route.params.refreshToken, userID: route.params.userID})
+          navigation.navigate('PostListPage', {refreshToken: refreshToken, userID: route.params.userID})
       }
       else if(option == '3') {
-          navigation.navigate('UserEditPage', {refreshToken: route.params.refreshToken, userID: route.params.userID})
+          navigation.navigate('UserEditPage', {refreshToken: refreshToken, userID: route.params.userID})
       }
       else if(option == '4') {
-          navigation.navigate('UserPostsListPage', {refreshToken: route.params.refreshToken, userID: route.params.userID})
+          navigation.navigate('UserPostsListPage', {refreshToken: refreshToken, userID: route.params.userID})
       }
       else if(option == '5') {
-          const res = await LoginRegistrationModel.logout(route.params.refreshToken)
+          const res = await LoginRegistrationModel.logout(refreshToken)
           if(res == true)
               navigation.navigate('LoginPage')
           else
@@ -74,22 +76,24 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
       }
   }
 
-    const getPost = async() => {
+    const getUser = async() => {
       try{
-        const post: any = await PostModel.getPost(route.params.id, route.params.refreshToken)
-        navigation.setParams({refreshToken: post.refreshToken})
-        const solidPost: Post = post.dispPost
-        console.log(solidPost)
-        console.log(route.params.userID)
-        setAvatarUri(solidPost.imgUrl)
-        onChangeTitle(solidPost.post_title)
-        onChangeTxt(solidPost.post_text)
-        setPostId(solidPost.id)
+        const currentUser: any = await UserModel.getUserById(route.params.userID, route.params.refreshToken)
+        const extractedUser: User = {
+          name: currentUser.currentUser.name, 
+          age: currentUser.currentUser.age, 
+          email: currentUser.currentUser.email, 
+          imgUrl: currentUser.currentUser.imgUrl}
+        setAvatarUri(extractedUser.imgUrl)
+        onChangeName(extractedUser.name)
+        onChangeAge(extractedUser.age)
+        onChangeEmail(extractedUser.email)
+        setRefreshToken(currentUser.refreshToken)
         navigation.setOptions({
           headerLeft:(props:any) => (
-            <HeaderBackButton {...props} onPress={() => navigation.navigate("PostDetailsPage", {refreshToken: post.refreshToken, userID: route.params.userID, id: route.params.id})}/>
+            <HeaderBackButton {...props} onPress={() => navigation.navigate("PostListPage", {refreshToken: currentUser.refreshToken, userID: route.params.userID, id: route.params.id})}/>
           ),
-          headerRight:() => <LoginRegisterDropdownMenu onOptionSelected={onOptionSelected} refreshToken={post.refreshToken}/>
+          headerRight:() => <LoginRegisterDropdownMenu onOptionSelected={onOptionSelected} refreshToken={currentUser.refreshToken}/>
         })
       }catch(err){
         console.log(err)
@@ -97,35 +101,30 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
     }
     useEffect(() => {
       askPermission()
-      getPost()
+      getUser()
     }, [])
   
-    const onCancel = () => {
-      navigation.navigate("PostDetailsPage", {refreshToken: route.params.refreshToken, userID: route.params.userID, id: route.params.id})
-    }
-    const onSave = async() => {
-      let post:Post = {
-        creator_id: route.params.userID,
-        post_title: title,
-        post_text: txt,
-        imgUrl: avatarUri,
-        id: id
+    const onSave = async(refreshToken: string) => {
+      let user:User = {
+        name: name,
+        age: age,
+        email: email,
+        imgUrl: avatarUri
       }
       try {
-        if(post.imgUrl != ""){
+        if(user.imgUrl != ""){
           console.log("uploading image")
           const url = await PostModel.uploadImage(avatarUri)
-          post.imgUrl = url
+          user.imgUrl = url
         }
       }catch(err){
         console.log(err)
       }
-      const result = await PostModel.updatePost(post, route.params.refreshToken, post.id);
+      console.log(route.params.userID)
+      const result = await UserModel.updateUser(user, refreshToken, route.params.userID);
       console.log(result)
       if(result){
-        navigation.setParams({refreshToken: result.refreshToken})
-        navigation.setParams({userID: route.params.userID})
-        navigation.navigate("PostDetailsPage", {refreshToken: result.refreshToken, userID: route.params.userID, id: post.id})
+        navigation.navigate("PostListPage", {refreshToken: result, userID: route.params.userID})
       }
         
       else
@@ -136,9 +135,21 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
 
         <TextInput
           style={styles.input}
-          onChangeText={onChangeTitle}
-          value={title}
-          placeholder='Enter your Title'
+          onChangeText={onChangeName}
+          value={name}
+          placeholder='Enter your Name'
+        />
+        <TextInput
+          style={styles.input}
+          onChangeText={onChangeAge}
+          value={age}
+          placeholder='Enter your Age'
+        />
+        <TextInput
+          style={styles.input}
+          onChangeText={onChangeEmail}
+          value={email}
+          placeholder='Enter your Email'
         />
         <View>
         {avatarUri == "url" && <Image style={styles.avatar} source={require('../assets/avatar.png')}/>}
@@ -152,17 +163,9 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
         </View>
         
         
-        <TextInput
-          style={styles.input}
-          onChangeText={onChangeTxt}
-          value={txt}
-          placeholder='Enter your Text'
-        />
+        
         <View style={styles.buttons}>
-          <TouchableOpacity style={styles.button} onPress={onCancel}>
-            <Text style={styles.button}>CANCEL</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={onSave}>
+          <TouchableOpacity style={styles.button} onPress={() => onSave(refreshToken)}>
             <Text style={styles.button}>SAVE</Text>
           </TouchableOpacity>
         </View>
@@ -198,7 +201,7 @@ const styles = StyleSheet.create({
     cameraButton: {
       position: 'absolute',
       bottom: -10,
-      left: 100,
+      left: 10,
       width: 50,
       height: 50,
     },
