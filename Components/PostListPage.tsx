@@ -2,7 +2,7 @@ import {FC, useEffect, useState} from "react";
 import {FlatList, StatusBar, Text, View, StyleSheet, Button, Alert, ActivityIndicator} from "react-native"
 import {CommonActions, useIsFocused, useNavigation} from '@react-navigation/native'
 import {HeaderBackButton} from '@react-navigation/elements'
-import StudentListRow from "./StudentListRow";
+import PostListContent from "./PostListContent";
 import PostModel, { Post } from "../Model/PostModel";
 import LoginRegisterDropdownMenu from "./LoginRegisterDropdownMenu";
 import LoginRegistrationModel from "../Model/LoginRegistrationModel";
@@ -101,7 +101,7 @@ const PostListPage: FC<{route:any, navigation: any, }> = ({navigation, route}) =
                 data = {data}
                 keyExtractor={(item) => item.id}
                 renderItem={({item}) => (
-                    <StudentListRow post_title={item.post_title} post_text={item.post_text} imgURL={item.imgUrl} id={item.id} creator_image={item.creator_imgUrl} onItemSelected={onItemSelected}/>
+                    <PostListContent post_title={item.post_title} post_text={item.post_text} imgURL={item.imgUrl} id={item.id} creator_image={item.creator_imgUrl} onItemSelected={onItemSelected}/>
                 )}
             />
             }

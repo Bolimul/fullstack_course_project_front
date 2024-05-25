@@ -1,8 +1,7 @@
-import { useState, FC } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, TextInput, StatusBar, Button, TouchableHighlight} from 'react-native';
-import UserModel from '../Model/UserModel';
+import { FC } from 'react';
+import { StyleSheet, Text, View, Image, TouchableHighlight} from 'react-native';
 
-const StudentListRow: FC<{
+const PostListContent: FC<{
     post_title: string, 
     post_text:string, 
     imgURL: string,
@@ -10,8 +9,6 @@ const StudentListRow: FC<{
     creator_image: string,
     onItemSelected: (id: string) => void
 }> = ({post_title, post_text, imgURL, id, creator_image, onItemSelected}) => {
-
-const [userImg, setUserImg] = useState('')
 
 const onPress = () => {
     onItemSelected(id)
@@ -70,4 +67,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default StudentListRow;
+export default PostListContent;

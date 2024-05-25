@@ -47,11 +47,11 @@ const getAllPostsOfSpecificUser = async(refreshToken: string, userID: string) =>
     console.log("getAllPosts")
     let data = Array<Post>()
     let refrToken = ''
-    const currentUser: any = await UserModel.getUserById(userID, refrToken)
+    const currentUser: any = await UserModel.getUserById(userID, refreshToken)
     refrToken = currentUser.refreshToken
     const imgUrl = currentUser.currentUser.imgUrl
     try {
-        const posts: any = await PostApi.getAllPosts(refreshToken)
+        const posts: any = await PostApi.getAllPosts(refrToken)
         if(posts.Posts){
             for (let index = 0; index < posts.Posts.length; index++) {
                 

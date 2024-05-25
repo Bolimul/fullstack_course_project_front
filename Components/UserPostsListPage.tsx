@@ -2,7 +2,7 @@ import {FC, useEffect, useState} from "react";
 import {FlatList, StatusBar, Text, View, StyleSheet, Button, Alert, ActivityIndicator} from "react-native"
 import {useIsFocused, useNavigation} from '@react-navigation/native'
 import {HeaderBackButton} from '@react-navigation/elements'
-import StudentListRow from "./StudentListRow";
+import PostListContent from "./PostListContent";
 import PostModel, { Post } from "../Model/PostModel";
 import LoginRegisterDropdownMenu from "./LoginRegisterDropdownMenu";
 import LoginRegistrationModel from "../Model/LoginRegistrationModel";
@@ -29,8 +29,10 @@ const UserPostsListPage: FC<{route:any, navigation: any, }> = ({navigation, rout
         const unsubscribeFocus = navigation.addListener('focus',async()=>{
         
         try{
+            
             posts = await PostModel.getAllPostsOfSpecificUser(route.params.refreshToken, route.params.userID)
             setData(posts.Posts)
+            
         }catch(err){
             console.log(err)
         }
@@ -94,7 +96,7 @@ const UserPostsListPage: FC<{route:any, navigation: any, }> = ({navigation, rout
                 data = {data}
                 keyExtractor={(item) => item.id}
                 renderItem={({item}) => (
-                    <StudentListRow post_title={item.post_title} post_text={item.post_text} imgURL={item.imgUrl} id={item.id} creator_image={item.creator_imgUrl} onItemSelected={onItemSelected}/>
+                    <PostListContent post_title={item.post_title} post_text={item.post_text} imgURL={item.imgUrl} id={item.id} creator_image={item.creator_imgUrl} onItemSelected={onItemSelected}/>
                 )}
             />
             }

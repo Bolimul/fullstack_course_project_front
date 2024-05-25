@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     cameraButton: {
       position: 'absolute',
       bottom: -10,
-      left: 100,
+      left: 10,
       width: 50,
       height: 50,
     },
