@@ -6,6 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import PostModel, { Post } from '../Model/PostModel';
 import LoginRegisterDropdownMenu from './LoginRegisterDropdownMenu';
 import LoginRegistrationModel from '../Model/LoginRegistrationModel';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 
 const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => {
@@ -13,6 +14,11 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
     const [title, onChangeTitle] = useState('');
     const [txt, onChangeTxt] = useState('');
     const [avatarUri, setAvatarUri] = useState('');
+
+    GoogleSignin.configure({
+      scopes: ["https://www.googleapis.com/auth/drive.readonly"],
+      webClientId: "904531963231-c4b8cdq9ua6nb2l3ln5h1i3etl087nef.apps.googleusercontent.com"
+    })
 
     const askPermission = async () => {
       try {
@@ -67,7 +73,11 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
       else if(option == '5') {
           const res = await LoginRegistrationModel.logout(refreshToken)
           if(res == true)
+            {
+              await GoogleSignin.revokeAccess()
+              await GoogleSignin.signOut()
               navigation.navigate('LoginPage')
+            } 
           else
               Alert.alert("Logout was not successful")
       }
@@ -95,7 +105,8 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
         post_title: title,
         post_text: txt,
         imgUrl: avatarUri,
-        id: ''
+        id: '',
+        creator_imgUrl: ''
       }
       try {
         if(avatarUri != ""){

@@ -2,12 +2,42 @@ import { useState, FC, useEffect } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, TextInput, StatusBar, Button} from 'react-native';
 import LoginRegistrationModel from '../Model/LoginRegistrationModel';
 import LoginRegisterDropdownMenu from '../Components/LoginRegisterDropdownMenu'
+import { GoogleSignin, GoogleSigninButton, statusCodes } from '@react-native-google-signin/google-signin';
 
 
 const LoginPage: FC<{navigation: any}> = ({navigation}) => {
 
     const [email, onChangeEmail] = useState('');
     const [password, onChangePassword] = useState('');
+
+    GoogleSignin.configure({
+      scopes: ["https://www.googleapis.com/auth/drive.readonly"],
+      webClientId: "904531963231-c4b8cdq9ua6nb2l3ln5h1i3etl087nef.apps.googleusercontent.com"
+    })
+
+    const signIn = async () => {
+      try {
+        await GoogleSignin.hasPlayServices();
+        const userInfo = await GoogleSignin.signIn();
+        const idToken = userInfo.idToken
+        const result: any = await LoginRegistrationModel.googleSignin(idToken)
+        if(result != null){
+          navigation.navigate('PostListPage',{accessToken: result.accessToken, refreshToken: result.refreshToken, userID: result.userID})
+        }else{
+          Alert.alert("Login Error:", "Your email or password are incorrect")
+        }
+      } catch (error: any) {
+        if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+          // user cancelled the login flow
+        } else if (error.code === statusCodes.IN_PROGRESS) {
+          // operation (e.g. sign in) is in progress already
+        } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+          // play services not available or outdated
+        } else {
+          // some other error happened
+        }
+      }
+    };
   
     const onSave = async() => {
       const user = {
@@ -39,10 +69,14 @@ const LoginPage: FC<{navigation: any}> = ({navigation}) => {
             <Text style={styles.button}>LOGIN</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={() => {navigation.navigate("RegisterPage")}}>
-            <Text style={styles.button}>Register</Text>
+            <Text style={styles.button}>REGISTER</Text>
           </TouchableOpacity>
         </View>
-  
+        <GoogleSigninButton style={styles.googleButton}
+        size={GoogleSigninButton.Size.Wide}
+        color={GoogleSigninButton.Color.Dark}
+        onPress={signIn}
+        />
       </View>
     )
 }
@@ -98,6 +132,9 @@ const styles = StyleSheet.create({
     },
     button: {
       padding: 10
+    },
+    googleButton: {
+      alignSelf: 'center'
     }
 })
 

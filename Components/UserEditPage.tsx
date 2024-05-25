@@ -1,5 +1,5 @@
 import { useState, FC, useEffect } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, TextInput, StatusBar, Button} from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, TextInput, StatusBar, Button, ActivityIndicator} from 'react-native';
 import {HeaderBackButton} from '@react-navigation/elements'
 import * as ImagePicker from 'expo-image-picker';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -7,6 +7,7 @@ import PostModel, { Post } from '../Model/PostModel';
 import UserModel, { User } from '../Model/UserModel';
 import LoginRegistrationModel from '../Model/LoginRegistrationModel';
 import LoginRegisterDropdownMenu from './LoginRegisterDropdownMenu';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 
 const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => {
@@ -16,6 +17,12 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
     const [avatarUri, setAvatarUri] = useState('url');
     const [email, onChangeEmail] = useState('');
     const [refreshToken, setRefreshToken] = useState('')
+    const [isLoading, setLoading] = useState(true)
+
+    GoogleSignin.configure({
+      scopes: ["https://www.googleapis.com/auth/drive.readonly"],
+      webClientId: "904531963231-c4b8cdq9ua6nb2l3ln5h1i3etl087nef.apps.googleusercontent.com"
+    })
 
     const askPermission = async () => {
       try {
@@ -70,7 +77,11 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
       else if(option == '5') {
           const res = await LoginRegistrationModel.logout(refreshToken)
           if(res == true)
+          {
+              await GoogleSignin.revokeAccess()
+              await GoogleSignin.signOut()
               navigation.navigate('LoginPage')
+          }
           else
               Alert.alert("Logout was not successful")
       }
@@ -78,7 +89,8 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
 
     const getUser = async() => {
       try{
-        const currentUser: any = await UserModel.getUserById(route.params.userID, route.params.refreshToken)
+        if(name == '' && age == '' && avatarUri == 'url' && email == ''){
+          const currentUser: any = await UserModel.getUserById(route.params.userID, route.params.refreshToken)
         const extractedUser: User = {
           name: currentUser.currentUser.name, 
           age: currentUser.currentUser.age, 
@@ -95,6 +107,8 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
           ),
           headerRight:() => <LoginRegisterDropdownMenu onOptionSelected={onOptionSelected} refreshToken={currentUser.refreshToken}/>
         })
+        }
+        
       }catch(err){
         console.log(err)
       }
@@ -102,8 +116,14 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
     useEffect(() => {
       askPermission()
       getUser()
-    }, [])
-  
+      if (name != '') {
+          setLoading(false)
+      }
+      else {
+          setLoading(true)
+      }
+    }, [name])
+
     const onSave = async(refreshToken: string) => {
       let user:User = {
         name: name,
@@ -131,46 +151,46 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
         Alert.alert("Something gone wrong while updating this post. Please try again")
     }
     return(    
-    <View style={styles.container}>
-
-        <TextInput
-          style={styles.input}
-          onChangeText={onChangeName}
-          value={name}
-          placeholder='Enter your Name'
-        />
-        <TextInput
-          style={styles.input}
-          onChangeText={onChangeAge}
-          value={age}
-          placeholder='Enter your Age'
-        />
-        <TextInput
-          style={styles.input}
-          onChangeText={onChangeEmail}
-          value={email}
-          placeholder='Enter your Email'
-        />
-        <View>
-        {avatarUri == "url" && <Image style={styles.avatar} source={require('../assets/avatar.png')}/>}
-        {avatarUri != "url" && <Image style={styles.avatar} source={{uri: avatarUri}}/>}
-        <TouchableOpacity onPress={openGallery}>
-          <Ionicons name={"image"} style={styles.galleryButton} size={50}/>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={openCamera}>
-          <Ionicons name={"camera"} style={styles.cameraButton} size={50}/>
-        </TouchableOpacity>
+      <View style={styles.viewstyle}>
+        {isLoading ? <ActivityIndicator size={'large'}/> : 
+        <View style={styles.container}>
+          <TextInput
+            style={styles.input}
+            onChangeText={onChangeName}
+            value={name}
+            placeholder='Enter your Name'
+          />
+          <TextInput
+            style={styles.input}
+            onChangeText={onChangeAge}
+            value={age}
+            placeholder='Enter your Age'
+          />
+          <TextInput
+            style={styles.input}
+            onChangeText={onChangeEmail}
+            value={email}
+            placeholder='Enter your Email'
+          />
+          <View>
+            {avatarUri == "url" && <Image style={styles.avatar} source={require('../assets/avatar.png')}/>}
+            {avatarUri != "url" && <Image style={styles.avatar} source={{uri: avatarUri}}/>}
+            <TouchableOpacity onPress={openGallery}>
+              <Ionicons name={"image"} style={styles.galleryButton} size={50}/>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={openCamera}>
+              <Ionicons name={"camera"} style={styles.cameraButton} size={50}/>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.buttons}>
+            <TouchableOpacity style={styles.button} onPress={() => onSave(refreshToken)}>
+              <Text style={styles.button}>SAVE</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-        
-        
-        
-        <View style={styles.buttons}>
-          <TouchableOpacity style={styles.button} onPress={() => onSave(refreshToken)}>
-            <Text style={styles.button}>SAVE</Text>
-          </TouchableOpacity>
-        </View>
-  
+        }
       </View>
+    
     )
 }
 
@@ -225,6 +245,9 @@ const styles = StyleSheet.create({
     },
     button: {
       padding: 10
+    },
+    viewstyle: {
+        flex: 1,
     }
 })
 

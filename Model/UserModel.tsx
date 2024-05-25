@@ -9,33 +9,6 @@ export type User = {
 }
 
 
-const getAllStudents = async () => {
-    console.log("getAllStudentss")
-    let data = Array<User>()
-    try {
-        const students: any = await UserApi.getAllStudents()
-        if(students.data){
-            for (let index = 0; index < students.data.length; index++) {
-                console.log("element: " + students.data[index]._id)
-                const st: User = {
-                    name: students.data[index].name,
-                    age: students.data[index].age,
-                    email: students.data[index].email,
-                    imgUrl: students.data[index].imgUrl
-                }
-                data.push(st)
-            }
-        }
-        console.log(data)
-        return data
-    } catch (error) {
-        console.log("Fail reading students from server: " + error)
-    }
-    return data
-    
-    
-}
-
 const getUserById = async(id: string, refreshToken: string) => {
     try{
         console.log('User id: ' + id)
@@ -68,12 +41,6 @@ const updateUser = async (user: User, refreshToken: string, userID: string) => {
     
 }
 
-// const deleteStudent = (id: string) => {
-//     const index = data.findIndex((student) => student.id == id);
-//     if(index != -1)
-//         data.splice(index, 1)
-// }
-
 const uploadImage = async(imageURI: String) => {
         var body = new FormData();
         body.append('file', {name: "name",type: 'image/jpeg',"uri": imageURI});
@@ -91,8 +58,6 @@ const uploadImage = async(imageURI: String) => {
             console.log("save failed " + err)
         }
         return ""
-        
-        
 }
 
 export default {getUserById, uploadImage, updateUser}

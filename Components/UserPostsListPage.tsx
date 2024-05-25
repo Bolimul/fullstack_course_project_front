@@ -1,16 +1,23 @@
 import {FC, useEffect, useState} from "react";
-import {FlatList, StatusBar, Text, View, StyleSheet, Button, Alert} from "react-native"
+import {FlatList, StatusBar, Text, View, StyleSheet, Button, Alert, ActivityIndicator} from "react-native"
 import {useIsFocused, useNavigation} from '@react-navigation/native'
 import {HeaderBackButton} from '@react-navigation/elements'
 import StudentListRow from "./StudentListRow";
 import PostModel, { Post } from "../Model/PostModel";
 import LoginRegisterDropdownMenu from "./LoginRegisterDropdownMenu";
 import LoginRegistrationModel from "../Model/LoginRegistrationModel";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 
 const UserPostsListPage: FC<{route:any, navigation: any, }> = ({navigation, route}) => {
     const [data, setData] = useState<Post[]>([])
-    const [refreshToken, setRefreshToken] = useState('')
+    const [isLoading, setLoading] = useState(true)
+
+    GoogleSignin.configure({
+        scopes: ["https://www.googleapis.com/auth/drive.readonly"],
+        webClientId: "904531963231-c4b8cdq9ua6nb2l3ln5h1i3etl087nef.apps.googleusercontent.com"
+      })
+
     const onItemSelected = (id: string) => {
         console.log('Item selected' + id)
         navigation.navigate('PostDetailsPage', {id: id, refreshToken: route.params.refreshToken, userID: route.params.userID});
@@ -29,7 +36,6 @@ const UserPostsListPage: FC<{route:any, navigation: any, }> = ({navigation, rout
         }
         console.log('Refresh token in UserPostsListPage: ' + posts.refreshToken)
         navigation.setParams({refreshToken: posts.refreshToken})
-        setRefreshToken(refreshToken)
         console.log("In UserPostsListPage: " + route.params.refreshToken)
         console.log("screen in focus")
         navigation.setOptions({
@@ -43,6 +49,15 @@ const UserPostsListPage: FC<{route:any, navigation: any, }> = ({navigation, rout
             unsubscribeFocus()
         }
         },[navigation, route.params?.refreshToken])
+
+    useEffect(() => {
+        if (data.length > 0) {
+            setLoading(false)
+        }
+        else {
+            setLoading(true)
+        }
+    }, [data])
 
     const onOptionSelected = async(option: string, refreshToken:string) => {
         console.log("From userPostsListPage: " + refreshToken)
@@ -61,21 +76,29 @@ const UserPostsListPage: FC<{route:any, navigation: any, }> = ({navigation, rout
         else if(option == '5') {
             const res = await LoginRegistrationModel.logout(refreshToken)
             if(res == true)
+            {
+                await GoogleSignin.revokeAccess()
+                await GoogleSignin.signOut()
                 navigation.navigate('LoginPage')
+            }
             else
                 Alert.alert("Logout was not successful")
         }
     }
 
     return(
-        <FlatList 
-            style={styles.flatstyle}
-            data = {data}
-            keyExtractor={(item) => item.id}
-            renderItem={({item}) => (
-                <StudentListRow post_title={item.post_title} post_text={item.post_text} imgURL={item.imgUrl} id={item.id} onItemSelected={onItemSelected}/>
-            )}
-        />
+        <View style={styles.viewstyle}>
+            {isLoading ? <ActivityIndicator size={'large'}/> : 
+                <FlatList 
+                style={styles.flatstyle}
+                data = {data}
+                keyExtractor={(item) => item.id}
+                renderItem={({item}) => (
+                    <StudentListRow post_title={item.post_title} post_text={item.post_text} imgURL={item.imgUrl} id={item.id} creator_image={item.creator_imgUrl} onItemSelected={onItemSelected}/>
+                )}
+            />
+            }
+        </View>
     )
 }
 
@@ -83,6 +106,9 @@ const styles = StyleSheet.create({
     flatstyle: {
         flex: 1,
         marginTop: StatusBar.currentHeight
+    },
+    viewstyle: {
+        flex: 1,
     }
 });
 

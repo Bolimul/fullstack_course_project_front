@@ -1,13 +1,5 @@
 import React, { FC, useEffect, useState } from 'react';
-  import { StyleSheet } from 'react-native';
-  import { Dropdown } from 'react-native-element-dropdown';
-  import AntDesign from '@expo/vector-icons/AntDesign';
-  import { SelectList } from 'react-native-dropdown-select-list'
-
-  const data = [
-    { label: 'Register', value: '1' },
-    { label: 'Login', value: '2' },
-  ];
+import { SelectList } from 'react-native-dropdown-select-list'
 
   const DropdownComponent: FC <{onOptionSelected: (option: string, refreshToken:string) => void, refreshToken: string }> = ({onOptionSelected, refreshToken}) => {
   

@@ -3,10 +3,16 @@ import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, TextInput, Stat
 import StudentModel, { User } from '../Model/UserModel';
 import * as ImagePicker from 'expo-image-picker';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { GoogleSignin, GoogleSigninButton, statusCodes } from '@react-native-google-signin/google-signin';
 import LoginRegistrationModel from '../Model/LoginRegistrationModel';
 
 
 const StudentAddPage: FC<{navigation: any}> = ({navigation}) => {
+
+  GoogleSignin.configure({
+    scopes: ["https://www.googleapis.com/auth/drive.readonly"],
+    webClientId: "904531963231-c4b8cdq9ua6nb2l3ln5h1i3etl087nef.apps.googleusercontent.com"
+  })
 
     const [name, onChangeName] = useState('');
     const [age, onChangeAge] = useState('');
@@ -24,6 +30,30 @@ const StudentAddPage: FC<{navigation: any}> = ({navigation}) => {
         console.log("askPermmition error: " + error)
       }
     }
+
+    const signIn = async () => {
+      try {
+        await GoogleSignin.hasPlayServices();
+        const userInfo = await GoogleSignin.signIn();
+        const idToken = userInfo.idToken
+        const result: any = await LoginRegistrationModel.googleSignin(idToken)
+        if(result != null){
+          navigation.navigate('PostListPage',{accessToken: result.accessToken, refreshToken: result.refreshToken, userID: result.userID})
+        }else{
+          Alert.alert("Login Error:", "Your email or password are incorrect")
+        }
+      } catch (error: any) {
+        if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+          // user cancelled the login flow
+        } else if (error.code === statusCodes.IN_PROGRESS) {
+          // operation (e.g. sign in) is in progress already
+        } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+          // play services not available or outdated
+        } else {
+          // some other error happened
+        }
+      }
+    };
 
 
     const openCamera = async () => {
@@ -75,7 +105,7 @@ const StudentAddPage: FC<{navigation: any}> = ({navigation}) => {
       }
       const result: string = await LoginRegistrationModel.registration(user);
       if(result != null){
-        navigation.navigate("StudentListPage", result)
+        navigation.navigate("PostListPage", result)
       }else{
         Alert.alert("Login Error:", "Your email or password are incorrect")
       }
@@ -87,7 +117,7 @@ const StudentAddPage: FC<{navigation: any}> = ({navigation}) => {
         {avatarUri == "" && <Image style={styles.avatar} source={require('../assets/avatar.png')}/>}
         {avatarUri != "" && <Image style={styles.avatar} source={{uri: avatarUri}}/>}
         <TouchableOpacity onPress={openGallery}>
-          <Ionicons name={"image"} style={styles.cameraButton} size={50}/>
+          <Ionicons name={"image"} style={styles.galleryButton} size={50}/>
         </TouchableOpacity>
         <TouchableOpacity onPress={openCamera}>
           <Ionicons name={"camera"} style={styles.cameraButton} size={50}/>
@@ -120,7 +150,15 @@ const StudentAddPage: FC<{navigation: any}> = ({navigation}) => {
           <TouchableOpacity style={styles.button} onPress={onSave}>
             <Text style={styles.button}>REGISTER</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => {navigation.navigate("LoginPage")}}>
+            <Text style={styles.button}>LOGIN</Text>
+          </TouchableOpacity>
         </View>
+        <GoogleSigninButton style={styles.googleButton}
+        size={GoogleSigninButton.Size.Wide}
+        color={GoogleSigninButton.Color.Dark}
+        onPress={signIn}
+        />
   
       </View>
     )
@@ -177,6 +215,9 @@ const styles = StyleSheet.create({
     },
     button: {
       padding: 10
+    },
+    googleButton: {
+      alignSelf: 'center'
     }
 })
 

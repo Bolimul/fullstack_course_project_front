@@ -1,13 +1,20 @@
 import { useState, FC, useEffect } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, TextInput, StatusBar, Button} from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, TextInput, StatusBar, Button, ActivityIndicator} from 'react-native';
 import PostModel, {Post} from '../Model/PostModel';
 import {HeaderBackButton} from '@react-navigation/elements'
 import LoginRegistrationModel from '../Model/LoginRegistrationModel';
 import LoginRegisterDropdownMenu from './LoginRegisterDropdownMenu';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 const PostDetailsPage: FC<{route: any, navigation: any}> = ({route, navigation}) => {
-  const [post, setPost] = useState<Post>({creator_id: '0', post_title: '0', post_text: '0', imgUrl: '0', id: '0'})
+  const [post, setPost] = useState<Post>({creator_id: '0', post_title: '0', post_text: '0', imgUrl: '0', id: '0', creator_imgUrl: '0'})
   const [isOwner, setOwner] = useState(false)
+  const [isLoading, setLoading] = useState(true)
+
+  GoogleSignin.configure({
+    scopes: ["https://www.googleapis.com/auth/drive.readonly"],
+    webClientId: "904531963231-c4b8cdq9ua6nb2l3ln5h1i3etl087nef.apps.googleusercontent.com"
+  })
 
   const onOptionSelected = async(option: string) => {
     if (option == '2') {
@@ -25,7 +32,11 @@ const PostDetailsPage: FC<{route: any, navigation: any}> = ({route, navigation})
     else if(option == '5') {
         const res = await LoginRegistrationModel.logout(route.params.refreshToken)
         if(res == true)
-            navigation.navigate('LoginPage')
+        {
+          await GoogleSignin.revokeAccess()
+          await GoogleSignin.signOut()
+          navigation.navigate('LoginPage')
+        }
         else
             Alert.alert("Logout was not successful")
     }
@@ -54,6 +65,17 @@ const PostDetailsPage: FC<{route: any, navigation: any}> = ({route, navigation})
     return unsubscribe
 }, [navigation, route.params])
 
+
+useEffect(() => {
+  if (post.creator_id != '0' && post.post_title != '0' && post.post_text != '0' && post.imgUrl != '0' && post.id != '0') {
+      setLoading(false)
+  }
+  else {
+      setLoading(true)
+  }
+}, [post])
+
+
 const OnEdit = () => {
   navigation.navigate("PostEditPage", {refreshToken: route.params.refreshToken, userID: route.params.userID, id: route.params.id})
 }
@@ -65,20 +87,25 @@ const OnDelete = async() => {
 }
 
     return(    
-    <View style={styles.container}>
-        <Text style={styles.title}>{post.post_title}</Text>
-        <Image style={styles.image} source={{uri: post.imgUrl}}/>
-        <Text style={styles.text}>{post.post_text}</Text>
-        {isOwner && <View style={styles.buttons}>
-          <TouchableOpacity style={styles.button} onPress={OnDelete}>
-            <Text style={styles.button}>DELETE</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={OnEdit}>
-            <Text style={styles.button}>EDIT</Text>
-          </TouchableOpacity>
-        </View>}
-        
-    </View>
+      <View style={styles.viewstyle}>
+        {isLoading ? <ActivityIndicator size={'large'}/> : 
+          <View style={styles.container}>
+          <Text style={styles.title}>{post.post_title}</Text>
+          <Image style={styles.image} source={{uri: post.imgUrl}}/>
+          <Text style={styles.text}>{post.post_text}</Text>
+          {isOwner && <View style={styles.buttons}>
+            <TouchableOpacity style={styles.button} onPress={OnDelete}>
+              <Text style={styles.button}>DELETE</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={OnEdit}>
+              <Text style={styles.button}>EDIT</Text>
+            </TouchableOpacity>
+          </View>}
+          
+      </View>
+        }
+      </View>
+    
     )
 }
 
@@ -114,6 +141,9 @@ const styles = StyleSheet.create({
     },
     button: {
       padding: 10
+    },
+    viewstyle: {
+      flex: 1,
     }
 })
 

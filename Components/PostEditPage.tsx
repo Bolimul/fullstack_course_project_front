@@ -1,19 +1,26 @@
 import { useState, FC, useEffect } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, TextInput, StatusBar, Button} from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, TextInput, StatusBar, Button, ActivityIndicator} from 'react-native';
 import {HeaderBackButton} from '@react-navigation/elements'
 import * as ImagePicker from 'expo-image-picker';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import PostModel, { Post } from '../Model/PostModel';
 import LoginRegistrationModel from '../Model/LoginRegistrationModel';
 import LoginRegisterDropdownMenu from './LoginRegisterDropdownMenu';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 
 const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => {
 
-    const [title, onChangeTitle] = useState('');
-    const [txt, onChangeTxt] = useState('');
+    const [title, onChangeTitle] = useState('0');
+    const [txt, onChangeTxt] = useState('0');
     const [avatarUri, setAvatarUri] = useState('url');
-    const [id, setPostId] = useState('')
+    const [id, setPostId] = useState('0')
+    const [isLoading, setLoading] = useState(true)
+
+    GoogleSignin.configure({
+      scopes: ["https://www.googleapis.com/auth/drive.readonly"],
+      webClientId: "904531963231-c4b8cdq9ua6nb2l3ln5h1i3etl087nef.apps.googleusercontent.com"
+    })
 
     const askPermission = async () => {
       try {
@@ -68,7 +75,11 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
       else if(option == '5') {
           const res = await LoginRegistrationModel.logout(route.params.refreshToken)
           if(res == true)
+          {
+              await GoogleSignin.revokeAccess()
+              await GoogleSignin.signOut()
               navigation.navigate('LoginPage')
+          }
           else
               Alert.alert("Logout was not successful")
       }
@@ -98,7 +109,14 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
     useEffect(() => {
       askPermission()
       getPost()
-    }, [])
+      if (title != '0' && txt != '0' && avatarUri != '0' && id != '0') {
+        setLoading(false)
+      }
+      else {
+        setLoading(true)
+      }
+    }, [id])
+
   
     const onCancel = () => {
       navigation.navigate("PostDetailsPage", {refreshToken: route.params.refreshToken, userID: route.params.userID, id: route.params.id})
@@ -109,7 +127,8 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
         post_title: title,
         post_text: txt,
         imgUrl: avatarUri,
-        id: id
+        id: id,
+        creator_imgUrl: ''
       }
       try {
         if(post.imgUrl != ""){
@@ -131,43 +150,44 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
       else
         Alert.alert("Something gone wrong while updating this post. Please try again")
     }
-    return(    
-    <View style={styles.container}>
-
-        <TextInput
-          style={styles.input}
-          onChangeText={onChangeTitle}
-          value={title}
-          placeholder='Enter your Title'
-        />
-        <View>
-        {avatarUri == "url" && <Image style={styles.avatar} source={require('../assets/avatar.png')}/>}
-        {avatarUri != "url" && <Image style={styles.avatar} source={{uri: avatarUri}}/>}
-        <TouchableOpacity onPress={openGallery}>
-          <Ionicons name={"image"} style={styles.galleryButton} size={50}/>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={openCamera}>
-          <Ionicons name={"camera"} style={styles.cameraButton} size={50}/>
-        </TouchableOpacity>
-        </View>
-        
-        
-        <TextInput
-          style={styles.input}
-          onChangeText={onChangeTxt}
-          value={txt}
-          placeholder='Enter your Text'
-        />
-        <View style={styles.buttons}>
-          <TouchableOpacity style={styles.button} onPress={onCancel}>
-            <Text style={styles.button}>CANCEL</Text>
+    return(
+      <View style={styles.viewstyle}>
+        {isLoading ? <ActivityIndicator size={'large'}/> : 
+          <View style={styles.container}>
+          <TextInput
+            style={styles.input}
+            onChangeText={onChangeTitle}
+            value={title}
+            placeholder='Enter your Title'
+          />
+          <View>
+          {avatarUri == "url" && <Image style={styles.avatar} source={require('../assets/avatar.png')}/>}
+          {avatarUri != "url" && <Image style={styles.avatar} source={{uri: avatarUri}}/>}
+          <TouchableOpacity onPress={openGallery}>
+            <Ionicons name={"image"} style={styles.galleryButton} size={50}/>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={onSave}>
-            <Text style={styles.button}>SAVE</Text>
+          <TouchableOpacity onPress={openCamera}>
+            <Ionicons name={"camera"} style={styles.cameraButton} size={50}/>
           </TouchableOpacity>
+          </View>
+          <TextInput
+            style={styles.input}
+            onChangeText={onChangeTxt}
+            value={txt}
+            placeholder='Enter your Text'
+          />
+          <View style={styles.buttons}>
+            <TouchableOpacity style={styles.button} onPress={onCancel}>
+              <Text style={styles.button}>CANCEL</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={onSave}>
+              <Text style={styles.button}>SAVE</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-  
+        }
       </View>
+    
     )
 }
 
@@ -222,7 +242,10 @@ const styles = StyleSheet.create({
     },
     button: {
       padding: 10
-    }
+    },
+    viewstyle: {
+      flex: 1
+  }
 })
 
 export default PostAddPage;

@@ -8,6 +8,7 @@ const registration = async(user: any) => {
     return await apiClient.post('/auth/register', user)
 }
 
+
 const logout = async(refreshToken: string) => {
     apiClient.setHeader('Authorization', 'Bearer ' + refreshToken)
     const data: any = await apiClient.get('/auth/refresh')
@@ -15,8 +16,14 @@ const logout = async(refreshToken: string) => {
     return await apiClient.post('/auth/logout')
 }
 
+const googleSignin = async(googleIdToken: string|null) => {
+    const res = await apiClient.post('/auth/google', {credential: googleIdToken})
+    return res
+}
+
 export default {
     login,
     registration,
-    logout
+    logout,
+    googleSignin
 }

@@ -41,8 +41,24 @@ const logout = async(refreshToken: string) => {
     }
 }
 
+const googleSignin = async(googleIdToken: string|null) => {
+    try{
+        const res = await LoginRegistrationApi.googleSignin(googleIdToken)
+        if(!res.ok){
+            return false
+        }
+        else{
+            const data: any = res.data
+            return data
+        }
+    }catch(err){
+        console.log(err)
+    }
+}
+
 export default {
     login,
     registration,
-    logout
+    logout,
+    googleSignin
 }
