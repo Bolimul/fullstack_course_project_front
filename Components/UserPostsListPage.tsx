@@ -79,7 +79,6 @@ const UserPostsListPage: FC<{route:any, navigation: any, }> = ({navigation, rout
             const res = await LoginRegistrationModel.logout(refreshToken)
             if(res == true)
             {
-                await GoogleSignin.revokeAccess()
                 await GoogleSignin.signOut()
                 navigation.navigate('LoginPage')
             }

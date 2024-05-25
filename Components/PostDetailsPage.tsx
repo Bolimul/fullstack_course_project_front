@@ -33,7 +33,6 @@ const PostDetailsPage: FC<{route: any, navigation: any}> = ({route, navigation})
         const res = await LoginRegistrationModel.logout(route.params.refreshToken)
         if(res == true)
         {
-          await GoogleSignin.revokeAccess()
           await GoogleSignin.signOut()
           navigation.navigate('LoginPage')
         }
@@ -126,7 +125,6 @@ const styles = StyleSheet.create({
       alignSelf: 'center',
       width: 200,
       height: 200,
-      borderRadius: 100
     },
     text: {
       height: 40,

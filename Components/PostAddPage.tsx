@@ -73,11 +73,10 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
       else if(option == '5') {
           const res = await LoginRegistrationModel.logout(refreshToken)
           if(res == true)
-            {
-              await GoogleSignin.revokeAccess()
+          {
               await GoogleSignin.signOut()
               navigation.navigate('LoginPage')
-            } 
+          } 
           else
               Alert.alert("Logout was not successful")
       }
@@ -133,7 +132,7 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
           placeholder='Enter your Title'
         />
         <View>
-        {avatarUri == "" && <Image style={styles.avatar} source={require('../assets/avatar.png')}/>}
+        {avatarUri == "" && <Image style={styles.avatar} source={require('../assets/dish example.jpg')}/>}
         {avatarUri != "" && <Image style={styles.avatar} source={{uri: avatarUri}}/>}
         <TouchableOpacity onPress={openGallery}>
           <Ionicons name={"image"} style={styles.galleryButton} size={50}/>
@@ -184,7 +183,6 @@ const styles = StyleSheet.create({
       alignSelf: 'center',
       width: 200,
       height: 200,
-      borderRadius: 100
     },
     cameraButton: {
       position: 'absolute',

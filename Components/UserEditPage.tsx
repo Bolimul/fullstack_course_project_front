@@ -78,7 +78,6 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
           const res = await LoginRegistrationModel.logout(refreshToken)
           if(res == true)
           {
-              await GoogleSignin.revokeAccess()
               await GoogleSignin.signOut()
               navigation.navigate('LoginPage')
           }
@@ -173,8 +172,8 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
             placeholder='Enter your Email'
           />
           <View>
-            {avatarUri == "url" && <Image style={styles.avatar} source={require('../assets/avatar.png')}/>}
-            {avatarUri != "url" && <Image style={styles.avatar} source={{uri: avatarUri}}/>}
+            {avatarUri == "url" && <Image style={styles.image} source={require('../assets/avatar.png')}/>}
+            {avatarUri != "url" && <Image style={styles.image} source={{uri: avatarUri}}/>}
             <TouchableOpacity onPress={openGallery}>
               <Ionicons name={"image"} style={styles.galleryButton} size={50}/>
             </TouchableOpacity>
@@ -201,12 +200,6 @@ const styles = StyleSheet.create({
       flexDirection: 'column',
       backgroundColor: '#fff',
       
-    },
-    avatar: {
-      height: 250,
-      resizeMode: "contain",
-      alignSelf: 'center',
-      width: '100%'
     },
     title: {
       fontSize: 30,

@@ -76,7 +76,6 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
           const res = await LoginRegistrationModel.logout(route.params.refreshToken)
           if(res == true)
           {
-              await GoogleSignin.revokeAccess()
               await GoogleSignin.signOut()
               navigation.navigate('LoginPage')
           }

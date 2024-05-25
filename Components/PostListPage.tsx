@@ -27,7 +27,6 @@ const PostListPage: FC<{route:any, navigation: any, }> = ({navigation, route}) =
         const res = await LoginRegistrationModel.logout(refreshToken)
         if(res == true)
         {
-            await GoogleSignin.revokeAccess()
             await GoogleSignin.signOut()
             navigation.navigate('LoginPage')
         }
@@ -87,7 +86,10 @@ const PostListPage: FC<{route:any, navigation: any, }> = ({navigation, route}) =
             else if(option == '5') {
                 const res = await LoginRegistrationModel.logout(refreshToken)
                 if(res == true)
+                {
+                    await GoogleSignin.signOut()
                     navigation.navigate('LoginPage')
+                } 
                 else
                     Alert.alert("Logout was not successful")
             }
