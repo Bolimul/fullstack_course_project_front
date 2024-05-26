@@ -98,20 +98,22 @@ const PostAddPage: FC<{route: any, navigation: any}> = ({navigation, route}) => 
     }
     const onSave = async() => {
       console.log(avatarUri)
-      console.log(JSON.stringify(route.params))
       let post:Post = {
         creator_id: route.params.userID,
         post_title: title,
         post_text: txt,
-        imgUrl: avatarUri,
+        imgUrl: "",
         id: '',
         creator_imgUrl: ''
       }
+      console.log(post.imgUrl)
       try {
         if(avatarUri != ""){
           console.log("uploading image")
           const url = await PostModel.uploadImage(avatarUri)
           post.imgUrl = url
+        }else{
+          post.imgUrl = "url"
         }
       }catch(err){
         console.log(err)

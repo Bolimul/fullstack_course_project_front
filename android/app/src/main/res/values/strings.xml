@@ -2,5 +2,4 @@
   <string name="app_name">sce_fullstack_2024_front</string>
   <string name="expo_splash_screen_resize_mode" translatable="false">contain</string>
   <string name="expo_splash_screen_status_bar_translucent" translatable="false">false</string>
-  <string name="server_client_id">904531963231-7h29616gdbr48hpqs3k9u697kbl6dn2d.apps.googleusercontent.com</string>
 </resources>

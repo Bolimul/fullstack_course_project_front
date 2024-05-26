@@ -17,7 +17,9 @@ const logout = async(refreshToken: string) => {
 }
 
 const googleSignin = async(googleIdToken: string|null) => {
+    console.log("GOOGLE " + googleIdToken)
     const res = await apiClient.post('/auth/google', {credential: googleIdToken})
+    console.log(res.data)
     return res
 }
 

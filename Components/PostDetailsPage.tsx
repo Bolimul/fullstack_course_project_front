@@ -7,7 +7,7 @@ import LoginRegisterDropdownMenu from './LoginRegisterDropdownMenu';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 const PostDetailsPage: FC<{route: any, navigation: any}> = ({route, navigation}) => {
-  const [post, setPost] = useState<Post>({creator_id: '0', post_title: '0', post_text: '0', imgUrl: '0', id: '0', creator_imgUrl: '0'})
+  const [post, setPost] = useState<Post>({creator_id: '0', post_title: '0', post_text: '0', imgUrl: 'url', id: '0', creator_imgUrl: '0'})
   const [isOwner, setOwner] = useState(false)
   const [isLoading, setLoading] = useState(true)
 
@@ -90,7 +90,8 @@ const OnDelete = async() => {
         {isLoading ? <ActivityIndicator size={'large'}/> : 
           <View style={styles.container}>
           <Text style={styles.title}>{post.post_title}</Text>
-          <Image style={styles.image} source={{uri: post.imgUrl}}/>
+          {post.imgUrl == "url" && <Image style={styles.image} source={require('../assets/dish example.jpg')}/>}
+          {post.imgUrl != "url" && <Image style={styles.image} source={{uri: post.imgUrl}}/>}
           <Text style={styles.text}>{post.post_text}</Text>
           {isOwner && <View style={styles.buttons}>
             <TouchableOpacity style={styles.button} onPress={OnDelete}>

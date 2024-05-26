@@ -44,6 +44,7 @@ const logout = async(refreshToken: string) => {
 const googleSignin = async(googleIdToken: string|null) => {
     try{
         const res = await LoginRegistrationApi.googleSignin(googleIdToken)
+        console.log(res.data)
         if(!res.ok){
             return false
         }

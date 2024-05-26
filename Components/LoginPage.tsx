@@ -18,9 +18,17 @@ const LoginPage: FC<{navigation: any}> = ({navigation}) => {
     const signIn = async () => {
       try {
         await GoogleSignin.hasPlayServices();
+        const b = await GoogleSignin.hasPreviousSignIn();
+        if(b == true)
+          {
+           //await GoogleSignin.revokeAccess()
+            await GoogleSignin.signOut()
+          }
+          
         const userInfo = await GoogleSignin.signIn();
         const idToken = userInfo.idToken
         const result: any = await LoginRegistrationModel.googleSignin(idToken)
+        console.log(result)
         if(result != null){
           navigation.navigate('PostListPage',{accessToken: result.accessToken, refreshToken: result.refreshToken, userID: result.userID})
         }else{
